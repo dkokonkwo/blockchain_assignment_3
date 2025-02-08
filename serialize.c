@@ -24,15 +24,24 @@ int serializeBlockchain(Blockchain *blockchain)
         fwrite(current->prevHash, SHA256_DIGEST_LENGTH, 1, file);
         fwrite(current->currHash, SHA256_DIGEST_LENGTH, 1, file);
 
-        fwrite(&current->transactions->nb_trans, sizeof(current->transactions->nb_trans), 1, file);
+         if (current->transactions)
+        {
+            fwrite(&current->transactions->nb_trans, sizeof(current->transactions->nb_trans), 1, file);
 
-        transaction_t *trans = current->transactions->head;
-        while (trans) {
-            fwrite(&trans->index, sizeof(trans->index), 1, file);
-            fwrite(trans->sender, sizeof(trans->sender), 1, file);
-            fwrite(trans->receiver, sizeof(trans->receiver), 1, file);
-            fwrite(trans->amount, sizeof(trans->amount), 1, file);
-            trans = trans->next;
+            transaction_t *trans = current->transactions->head;
+            while (trans)
+            {
+                fwrite(&trans->index, sizeof(trans->index), 1, file);
+                fwrite(trans->sender, sizeof(trans->sender), 1, file);
+                fwrite(trans->receiver, sizeof(trans->receiver), 1, file);
+                fwrite(trans->amount, sizeof(trans->amount), 1, file);  // Fixed by adding '&'
+                trans = trans->next;
+            }
+        }
+        else
+        {
+            int zero_trans = 0;
+            fwrite(&zero_trans, sizeof(zero_trans), 1, file);
         }
 
         current = current->next;

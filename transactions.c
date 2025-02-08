@@ -6,10 +6,11 @@
  */
 int serializeUnspent(list_of_transactions *unspent)
 {
-    FILE *file = (TRANSACTION_DATABASE, "wb");
+    FILE *file = fopen(TRANSACTION_DATABASE, "wb");
     if (!file)
     {
         printf("Failed to open file for serialization\n");
+        fclose(file);
         return 0;
     }
     transaction_t *current = unspent->head;
@@ -63,8 +64,8 @@ list_of_transactions *deserializeUnspent(void)
             break;
         }
         fread(transaction->sender, sizeof(transaction->sender), 1, file);
-        fread(transaction->receiver, sizeof(transaction->sender), 1, file);
-        fread(transaction->amount, sizeof(transaction->sender), 1, file);
+        fread(transaction->receiver, sizeof(transaction->receiver), 1, file);
+        fread(transaction->amount, sizeof(transaction->amount), 1, file);
 
         transaction->next = NULL;
         if (unspent_transactions->head == NULL) {

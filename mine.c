@@ -62,6 +62,14 @@ void calculateHash(block_t *block, unsigned int nonce, unsigned char *hash)
         exit(EXIT_FAILURE);
     }
 
+    /* No transactions */
+    if (!block->transactions)
+    {
+    EVP_MD_CTX_free(ctx);
+    fprintf(stderr, "Block has no transactions!\n");
+    exit(EXIT_FAILURE);
+    }
+
     /* adding block's transactions to hash*/
     current_trans = block->transactions->head;
     while (current_trans) {

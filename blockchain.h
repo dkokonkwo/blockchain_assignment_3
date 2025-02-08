@@ -63,5 +63,10 @@ Blockchain *initBlockchain(void);
 int validateBlockchain(Blockchain *blockchain);
 void printBlockchain(Blockchain *blockchain);
 void freeBlockchain(Blockchain *blockchain);
+list_of_transactions *createTransactions(const char *sender, const char *receiver, const char *amount);
+
+/* BLOCK FUNCTIONS */
+block_t *createBlock(int index, list_of_transactions *transactions, const unsigned char *prevHash, int difficulty);
+void addBlock(Blockchain *blockchain, block_t *block);
 
 #endif /* blockchain.h */

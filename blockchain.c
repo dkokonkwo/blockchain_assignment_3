@@ -6,7 +6,8 @@
  * @receiver: receiver details
  * @amount: transaction amount
  */
-list_of_transactions *createTransactions(const char *sender, const char *receiver, const char *amount) {
+list_of_transactions *createTransactions(const char *sender, const char *receiver, const char *amount)
+{
     list_of_transactions *new_list;
     transaction_t *new_trans = (transaction_t *)malloc(sizeof(transaction_t));
     if (!new_trans)
@@ -45,11 +46,12 @@ list_of_transactions *createTransactions(const char *sender, const char *receive
  * @prevHash: previous block hash
  * @difficulty: Proof of Work difficulty level
  */
-block_t *createBlock(int index, list_of_transactions *transactions, const unsigned char *prevHash, int difficulty) {
+block_t *createBlock(int index, list_of_transactions *transactions, const unsigned char *prevHash, int difficulty)
+{
     block_t *newBlock = (block_t *)malloc(sizeof(block_t));
     if (!newBlock) {
-        perror("Failed to allocate memory for block");
-        exit(EXIT_FAILURE);
+        printf("Failed to allocate memory for block\n");
+        return NULL;
     }
 
     newBlock->index = index;
@@ -64,20 +66,39 @@ block_t *createBlock(int index, list_of_transactions *transactions, const unsign
     newBlock->nonce = 0;
 
     mine_block(newBlock, difficulty);
+    list_of_transactions *new_unspent = calloc(1, sizeof(*new_unspent));
+    if (!new_unspent)
+    {
+        free(newBlock);
+        printf("Could not allocated memory for new unspent\n");
+        return NULL;
+    }
+    if (!serializeUnspent(new_unspent))
+    {
+        printf("Could not serialize new unspent\n");
+        free(newBlock);
+        return NULL;
+    }
     return newBlock;
 }
 
 /**
  * addBlock - adds block to blockchain
  * @blockchain: pointer to blockchain
- * @transactions: pointer to list of transactions
+ * @block: pointer to mined block
  * Return: Nothing
  */
-void addBlock(Blockchain *blockchain, list_of_transactions *transactions) {
-    block_t *newBlock = createBlock(blockchain->length, transactions, blockchain->tail->currHash, blockchain->difficulty);
-
-    blockchain->tail->next = newBlock;
-    blockchain->tail = newBlock;
+void addBlock(Blockchain *blockchain, block_t *block)
+{
+    if (!block)
+        return;
+    if (!blockchain->head)
+        blockchain->head = blockchain->tail = block;
+    else
+    {
+        blockchain->tail->next = block;
+        blockchain->tail = block;
+    }
     blockchain->length++;
 }
 
@@ -187,4 +208,20 @@ void freeBlockchain(Blockchain *blockchain)
         current = next;
     }
     free(blockchain);
+}
+
+/**
+ * adjust_difficulty - adjusts mining difficulty based on block time
+ * @prevTime: timestamp of previous block
+ * @currentTime: timestamp of current block
+ * @currentDifficulty: current difficulty level
+ * Return: new difficulty level
+ */
+int adjust_difficulty(uint64_t prevTime, uint64_t currentTime, int currentDifficulty) {
+    double timeDiff = difftime(currentTime, prevTime);
+    if (timeDiff < 10)
+        return currentDifficulty + 1;  // Increase difficulty
+    else if (timeDiff > 40 && currentDifficulty > 1)
+        return currentDifficulty - 1;  // Decrease difficulty
+    return currentDifficulty;
 }
