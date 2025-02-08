@@ -3,13 +3,15 @@
 /**
  * serializeBlockchain - serializes a blockchain to a file
  * blockchain: pointer to blockchain to serialize
- * filename: file to add blockchain to
+ * Return: 1 on success else 0
  */
-void serializeBlockchain(Blockchain *blockchain, const char *filename) {
-    FILE *file = fopen(filename, "wb");
-    if (!file) {
-        perror("Failed to open file for serialization");
-        exit(EXIT_FAILURE);
+int serializeBlockchain(Blockchain *blockchain)
+{
+    FILE *file = fopen(BLOCKCHAIN_DATABASE, "wb");
+    if (!file)
+    {
+        printf("Failed to open file for serialization\n");
+        return 0;
     }
 
     fwrite(&blockchain->difficulty, sizeof(blockchain->difficulty), 1, file);
@@ -37,4 +39,5 @@ void serializeBlockchain(Blockchain *blockchain, const char *filename) {
     }
 
     fclose(file);
+    return 1;
 }

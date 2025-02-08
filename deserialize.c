@@ -2,11 +2,11 @@
 
 /**
  * deserializeBlockchain - deserializes blockchain from a file
- * @filename - pointer to file where blockchain is stored
- * Return - pointer to blockchain
+ * Return: pointer to blockchain
  */
-Blockchain *deserializeBlockchain(const char *filename) {
-    FILE *file = fopen(filename, "rb");
+Blockchain *deserializeBlockchain(void)
+{
+    FILE *file = fopen(BLOCKCHAIN_DATABASE, "rb");
     if (!file) {
         perror("Failed to open file for deserialization");
         exit(EXIT_FAILURE);

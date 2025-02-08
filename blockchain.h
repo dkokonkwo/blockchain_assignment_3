@@ -44,4 +44,24 @@ typedef struct Blockchain {
     int difficulty;
 } Blockchain;
 
+
+/* TRANSACTION FUNCTIONS */
+int serializeUnspent(list_of_transactions *unspent);
+list_of_transactions *deserializeUnspent(void);
+int addTransactionToUnspent(const char *sender, const char *receiver, const char *amount);
+
+/* BLOCK MINING FUNCTIONS */
+void mine_block(block_t *block, int difficulty);
+void calculateHash(block_t *block, unsigned int nonce, unsigned char *hash);
+int is_valid_hash(unsigned char *hash, int difficulty);
+void hash_to_hex(unsigned char *hash, char *output);
+
+/* BLOCKCHAIN FUNCTIONS */
+Blockchain *deserializeBlockchain(void);
+int serializeBlockchain(Blockchain *blockchain);
+Blockchain *initBlockchain(void);
+int validateBlockchain(Blockchain *blockchain);
+void printBlockchain(Blockchain *blockchain);
+void freeBlockchain(Blockchain *blockchain);
+
 #endif /* blockchain.h */

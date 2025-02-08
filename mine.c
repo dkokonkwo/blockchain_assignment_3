@@ -6,7 +6,8 @@
  * @output: pointer to buffer to store converted data
  * Return: Nothing
  */
-void hash_to_hex(unsigned char *hash, char *output) {
+void hash_to_hex(unsigned char *hash, char *output)
+{
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
         sprintf(output + (i * 2), "%02x", hash[i]);
     }
@@ -19,7 +20,8 @@ void hash_to_hex(unsigned char *hash, char *output) {
  * @difficulty: PoW difficulty level
  * Return: 1 if valid else 0
  */
-int is_valid_hash(unsigned char *hash, int difficulty) {
+int is_valid_hash(unsigned char *hash, int difficulty)
+{
     for (int i = 0; i < difficulty; i++) {
         if (hash[i] != 0)
             return 0;
@@ -33,7 +35,8 @@ int is_valid_hash(unsigned char *hash, int difficulty) {
  * @hash: pointer to address to store hash
  * Return: Nothing
  */
-void calculateHash(block_t *block, unsigned int nonce, unsigned char *hash) {
+void calculateHash(block_t *block, unsigned int nonce, unsigned char *hash)
+{
     transaction_t *current_trans;
 
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
@@ -84,7 +87,8 @@ void calculateHash(block_t *block, unsigned int nonce, unsigned char *hash) {
  * @difficulty: PoW difficulty level
  * Return: Nothing
  */
-void mine_block(block_t *block, int difficulty) {
+void mine_block(block_t *block, int difficulty) 
+{
     unsigned int nonce = 0;
     unsigned char hash[SHA256_DIGEST_LENGTH];
 

@@ -1,11 +1,35 @@
 #include "blockchain.h"
-
+/**
+ * serializeUnspent - serialize unspent transactions to a file
+ * @unspent: pointer to list of unspent transactions
+ * Return: 1 on sucess else 0 on failure
+ */
+int serializeUnspent(list_of_transactions *unspent)
+{
+    FILE *file = (TRANSACTION_DATABASE, "wb");
+    if (!file)
+    {
+        printf("Failed to open file for serialization\n");
+        return 0;
+    }
+    transaction_t *current = unspent->head;
+    while (current)
+    {
+        fwrite(&current->index, sizeof(current->index), 1, file);
+        fwrite(current->sender, sizeof(current->sender), 1, file);
+        fwrite(current->receiver, sizeof(current->receiver), 1, file);
+        fwrite(current->amount, sizeof(current->amount), 1, file);
+        current = current->next;
+    }
+    fclose(file);
+    return 1;
+}
 
 /**
- * deserialize_unspent_transaction - get unpsent transactions from pool
+ * deserializeUnspent - get unpsent transactions from pool(file)
  * Return: pointer to list of unpsent transactions else exit
  */
-list_of_transactions *deserialize_unspent_transactions(void)
+list_of_transactions *deserializeUnspent(void)
 {
     FILE *file = fopen(TRANSACTION_DATABASE, "rb");
     if (!file) {
@@ -58,39 +82,46 @@ list_of_transactions *deserialize_unspent_transactions(void)
 }
 
 /**
- * addTransaction - adds transaction to unspent transactions pool(file)
+ * addTransactionToUnspent - adds transaction to unspent transactions pool(file)
  * @sender: sender details
  * @receiver: receiver details
  * @amount: amount of transaction
  * Return: 1 on success or 0 on failure
  */
-int addTransaction(const char *sender, const char *receiver, const char *amount)
+int addTransactionToUnspent(const char *sender, const char *receiver, const char *amount)
 {
-    
-
-    transaction_t *new_trans = (transaction_t *)malloc(sizeof(transaction_t));
-     if (!new_trans)
+    list_of_transactions *unspent;
+    transaction_t *new_trans;
+    if (!sender || !receiver || !amount)
     {
-        printf("Failed to allocate memory for new transaction");
+        printf("Wrong details\n");
         return 0;
     }
+
+    unspent = deserializeUnspent();
+
+    new_trans = (transaction_t *)malloc(sizeof(transaction_t));
+     if (!new_trans)
+    {
+        printf("Failed to allocate memory for new transaction\n");
+        return 0;
+    }
+    new_trans->index = unspent->nb_trans++;
     strncpy(new_trans->sender, sender, DATASIZE_MAX - 1);
-    new_trans->index = unspent_transactions->nb_trans++;
     new_trans->sender[DATASIZE_MAX - 1] = '\0';
     strncpy(new_trans->receiver, receiver, DATASIZE_MAX - 1);
     new_trans->receiver[DATASIZE_MAX - 1] = '\0';
     strncpy(new_trans->amount, amount, sizeof(new_trans->amount) - 1);
     new_trans->amount[sizeof(new_trans->amount) - 1] = '\0';
-
     new_trans->next = NULL;
-    printf("Creating new block to add transaction to.....\n");
-    data_t *new_data = createData(sender, receiver, amount);
-    if (!new_data)
+
+    if (!unspent->head)
+        unspent->head = unspent->tail = new_trans;
+    else
     {
-        fprintf(stderr, "Failed to create new data for block\n");
-        return 0;
+        unspent->tail->next = new_trans;
+        unspent->tail = new_trans;
     }
-    addBlock(blockchain, new_data);
-    printf("Added new block to blockchain\n");
-    return 1;
+
+    return (serializeUnspent(unspent));
 }

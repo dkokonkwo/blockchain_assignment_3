@@ -1,13 +1,13 @@
 #include "blockchain.h"
 
 /**
- * createData: create data_t structure for a new block
+ * createTranactions: create list of transactions for a new block main use for genesis block
  * @sender: sender details
  * @receiver: receiver details
  * @amount: transaction amount
  */
-data_t *createData(const char *sender, const char *receiver, const char *amount) {
-    data_t *new_data;
+list_of_transactions *createTransactions(const char *sender, const char *receiver, const char *amount) {
+    list_of_transactions *new_list;
     transaction_t *new_trans = (transaction_t *)malloc(sizeof(transaction_t));
     if (!new_trans)
     {
@@ -26,17 +26,17 @@ data_t *createData(const char *sender, const char *receiver, const char *amount)
     new_trans->next = NULL;
     new_trans->index = 0;
 
-    new_data = (data_t *)malloc(sizeof(data_t));
-    if (!new_data)
+    new_list = (list_of_transactions *)malloc(sizeof(list_of_transactions));
+    if (!new_list)
     {
         perror("Could not allocate memory for data");
         free(new_trans);
         exit(EXIT_FAILURE);
     }
-    new_data->head = new_trans;
-    new_data->tail = new_trans;
-    new_data->nb_transactions = 1;
-    return new_data;
+    new_list->head = new_trans;
+    new_list->tail = new_trans;
+    new_list->nb_trans = 1;
+    return new_list;
 }
 
 /**
@@ -86,17 +86,20 @@ void addBlock(Blockchain *blockchain, list_of_transactions *transactions) {
  * initBlockchain - initializes new blockchain with genesis block
  * Return: pointer to blockchain
  */
-Blockchain *initBlockchain() {
+Blockchain *initBlockchain(void)
+{
     Blockchain *blockchain = (Blockchain *)malloc(sizeof(Blockchain));
     if (!blockchain) {
         perror("Failed to allocate memory for blockchain");
         exit(EXIT_FAILURE);
     }
 
+    blockchain->difficulty = INITIAL_DIFFICULTY;
+
     // Create the genesis block
-    list_of_transactions *genesis_transactions = createData("Genesis", "Blockchain", "0");
+    list_of_transactions *genesis_transactions = createTransactions("Genesis", "Blockchain", "0");
     unsigned char genesisHash[SHA256_DIGEST_LENGTH] = {0};
-    block_t *genesisBlock = createBlock(0, genesis_transactions, genesisHash);
+    block_t *genesisBlock = createBlock(0, genesis_transactions, genesisHash, blockchain->difficulty);
 
     blockchain->head = blockchain->tail = genesisBlock;
     blockchain->length = 1;
@@ -109,7 +112,8 @@ Blockchain *initBlockchain() {
  * @blockchain: pointer to blockchain to validate
  * Return: 1 if valid, or 0 if invalid
  */
-int validateBlockchain(Blockchain *blockchain) {
+int validateBlockchain(Blockchain *blockchain)
+{
     if (!blockchain || !blockchain->head)
         return 0;
     unsigned char tmpHash[SHA256_DIGEST_LENGTH] = {0};
@@ -118,7 +122,7 @@ int validateBlockchain(Blockchain *blockchain) {
 
     while (current)
     {
-        calculateHash(current, calculatedHash);
+        calculateHash(current, current->nonce, calculatedHash);
         if (memcmp(current->currHash, calculatedHash, SHA256_DIGEST_LENGTH) != 0 || memcmp(current->prevHash, tmpHash, SHA256_DIGEST_LENGTH) != 0) {
             return 0;
         }    
@@ -133,7 +137,8 @@ int validateBlockchain(Blockchain *blockchain) {
  * @blockchain: pointer to blockchain
  * Return: Nothing
  */
-void printBlockchain(Blockchain *blockchain) {
+void printBlockchain(Blockchain *blockchain)
+{
     block_t *current = blockchain->head;
     while (current) {
         printf("Block %d\n", current->index);
@@ -166,7 +171,8 @@ void printBlockchain(Blockchain *blockchain) {
  * @blockchain: pointer to blockchain
  * Return: Nothing
  */
-void freeBlockchain(Blockchain *blockchain) {
+void freeBlockchain(Blockchain *blockchain)
+{
     block_t *current = blockchain->head;
     while (current) {
         block_t *next = current->next;
