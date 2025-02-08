@@ -9,7 +9,8 @@
 #include <openssl/evp.h>
 
 #define DATASIZE_MAX 1024
-#define FILENAME "/usr/bin/blockchain.dat"
+#define BLOCKCHAIN_DATABASE "/usr/bin/blockchain.dat"
+#define TRANSACTION_DATABASE "/usr/bin/transaction.dat"
 #define INITIAL_DIFFICULTY 2  /* Starting difficulty level */
 
 typedef struct transaction_s {

@@ -43,8 +43,9 @@ data_t *createData(const char *sender, const char *receiver, const char *amount)
  * createBlock - creates new block
  * @data: pointer to data to add to block
  * @prevHash: previous block hash
+ * @difficulty: Proof of Work difficulty level
  */
-block_t *createBlock(int index, data_t *data, const unsigned char *prevHash) {
+block_t *createBlock(int index, list_of_transactions *transactions, const unsigned char *prevHash, int difficulty) {
     block_t *newBlock = (block_t *)malloc(sizeof(block_t));
     if (!newBlock) {
         perror("Failed to allocate memory for block");
@@ -53,122 +54,33 @@ block_t *createBlock(int index, data_t *data, const unsigned char *prevHash) {
 
     newBlock->index = index;
     newBlock->timestamp = (uint64_t)time(NULL);
-    newBlock->data = data;
-    memcpy(newBlock->prevHash, prevHash, SHA256_DIGEST_LENGTH);
-    calculateHash(newBlock, newBlock->currHash);
+    newBlock->transactions = transactions;
+    if (prevHash)
+        memcpy(newBlock->prevHash, prevHash, SHA256_DIGEST_LENGTH);
+    else
+        memset(newBlock->prevHash, 0, SHA256_DIGEST_LENGTH); 
+    memset(newBlock->currHash, 0, SHA256_DIGEST_LENGTH);
     newBlock->next = NULL;
+    newBlock->nonce = 0;
+
+    mine_block(newBlock, difficulty);
     return newBlock;
-}
-
-/**
- * calculateHash - calculates the hash of a block
- * @block: pointer to block to calculate hash of
- * @hash: pointer to address to store hash
- * Return: Nothing
- */
-void calculateHash(block_t *block, unsigned char *hash) {
-    transaction_t *current_trans;
-
-    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
-    if (!ctx) {
-        fprintf(stderr, "Failed to create EVP_MD_CTX\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if (EVP_DigestInit_ex(ctx, EVP_sha256(), NULL) != 1 ||
-        EVP_DigestUpdate(ctx, &block->index, sizeof(block->index)) != 1 ||
-        EVP_DigestUpdate(ctx, &block->timestamp, sizeof(block->timestamp)) != 1 ||
-        EVP_DigestUpdate(ctx, block->prevHash, SHA256_DIGEST_LENGTH) != 1) {
-        fprintf(stderr, "Failed to calculate hash\n");
-        EVP_MD_CTX_free(ctx);
-        exit(EXIT_FAILURE);
-    }
-
-    /* adding block's data to hash*/
-    current_trans = block->data->head;
-    while (current_trans) {
-        EVP_DigestUpdate(ctx, current_trans->sender, sizeof(current_trans->sender));
-        EVP_DigestUpdate(ctx, current_trans->receiver, sizeof(current_trans->receiver));
-        EVP_DigestUpdate(ctx, current_trans->amount, sizeof(current_trans->amount));
-        current_trans = current_trans->next;
-    }
-
-    if (EVP_DigestFinal_ex(ctx, hash, NULL) != 1) {
-        fprintf(stderr, "Failed to finalize hash\n");
-        EVP_MD_CTX_free(ctx);
-        exit(EXIT_FAILURE);
-    }
-
-    EVP_MD_CTX_free(ctx);
 }
 
 /**
  * addBlock - adds block to blockchain
  * @blockchain: pointer to blockchain
- * @data: pointer to new data
+ * @transactions: pointer to list of transactions
  * Return: Nothing
  */
-void addBlock(Blockchain *blockchain, data_t *data) {
-    block_t *newBlock = createBlock(blockchain->length, data, blockchain->tail->currHash);
+void addBlock(Blockchain *blockchain, list_of_transactions *transactions) {
+    block_t *newBlock = createBlock(blockchain->length, transactions, blockchain->tail->currHash, blockchain->difficulty);
 
     blockchain->tail->next = newBlock;
     blockchain->tail = newBlock;
     blockchain->length++;
 }
 
-/**
- * addTransaction - adds transaction to a block if its tail else new block
- * @blockchain: pointer to blockchain
- * @block: pointer to block to add transaction to
- * @sender: sender details
- * @receiver: receiver details
- * @amount: amount of transaction
- * Return: 1 on success or 0 on failure
- */
-int addTransaction(Blockchain *blockchain, block_t *block, const char *sender, const char *receiver, const char *amount) {
-    if (!block || !blockchain)
-    {
-        printf("Blockchain or block not valid\n");
-        return 0;
-    }
-    if (blockchain->tail == block)
-    {
-        transaction_t *new_trans = (transaction_t *)malloc(sizeof(transaction_t));
-        if (!new_trans)
-        {
-            printf("Failed to allocate memory for new transaction");
-            return 0;
-        }
-        new_trans->index = block->data->nb_transactions++;
-        
-        strncpy(new_trans->sender, sender, DATASIZE_MAX - 1);
-        new_trans->sender[DATASIZE_MAX - 1] = '\0';
-        strncpy(new_trans->receiver, receiver, DATASIZE_MAX - 1);
-        new_trans->receiver[DATASIZE_MAX - 1] = '\0';
-        strncpy(new_trans->amount, amount, sizeof(new_trans->amount) - 1);
-        new_trans->amount[sizeof(new_trans->amount) - 1] = '\0';
-
-        new_trans->next = NULL;
-        if (block->data->tail) {
-            block->data->tail->next = new_trans;
-        }
-        else {
-            block->data->head = new_trans;
-        }
-        block->data->tail = new_trans;
-        return 1;
-    }
-    printf("Creating new block to add transaction to.....\n");
-    data_t *new_data = createData(sender, receiver, amount);
-    if (!new_data)
-    {
-        fprintf(stderr, "Failed to create new data for block\n");
-        return 0;
-    }
-    addBlock(blockchain, new_data);
-    printf("Added new block to blockchain\n");
-    return 1;
-}
 
 /**
  * initBlockchain - initializes new blockchain with genesis block
@@ -182,9 +94,9 @@ Blockchain *initBlockchain() {
     }
 
     // Create the genesis block
-    data_t *genesisData = createData("Genesis", "Blockchain", "0");
+    list_of_transactions *genesis_transactions = createData("Genesis", "Blockchain", "0");
     unsigned char genesisHash[SHA256_DIGEST_LENGTH] = {0};
-    block_t *genesisBlock = createBlock(0, genesisData, genesisHash);
+    block_t *genesisBlock = createBlock(0, genesis_transactions, genesisHash);
 
     blockchain->head = blockchain->tail = genesisBlock;
     blockchain->length = 1;
