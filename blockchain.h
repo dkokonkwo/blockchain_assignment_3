@@ -17,7 +17,7 @@ typedef struct transaction_s {
     int index;
     char sender[DATASIZE_MAX];
     char receiver[DATASIZE_MAX];
-    char amount[512];
+    char amount[20];
     struct transaction_s *next;
 } transaction_t;
 

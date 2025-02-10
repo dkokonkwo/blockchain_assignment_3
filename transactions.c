@@ -35,14 +35,14 @@ list_of_transactions *deserializeUnspent(void)
     FILE *file = fopen(TRANSACTION_DATABASE, "rb");
     if (!file) {
         perror("Failed to open file for deserialization of unpsent transactions");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
 
     list_of_transactions *unspent_transactions = (list_of_transactions *)malloc(sizeof(list_of_transactions));
     if (!unspent_transactions) {
         perror("Failed to allocate memory for unspent transactions");
         fclose(file);
-        exit(EXIT_FAILURE);
+        return NULL;
     }
     
     unspent_transactions->head = unspent_transactions->tail = NULL;
@@ -56,7 +56,7 @@ list_of_transactions *deserializeUnspent(void)
             perror("Failed to allocate memory for transaction");
             fclose(file);
             free(unspent_transactions);
-            exit(EXIT_FAILURE);
+            return NULL;
         }
 
         if (fread(&transaction->index, sizeof(transaction->index), 1, file) != 1) {
@@ -95,19 +95,27 @@ int addTransactionToUnspent(const char *sender, const char *receiver, const char
     transaction_t *new_trans;
     if (!sender || !receiver || !amount)
     {
-        printf("Wrong details\n");
+        fprintf(stderr, "Wrong details\n");
         return 0;
     }
 
     unspent = deserializeUnspent();
+    if (!unspent)
+    {
+        fprintf(stderr, "Error deserializing unspent transactions\n");
+        return 0;
+    }
 
     new_trans = (transaction_t *)malloc(sizeof(transaction_t));
      if (!new_trans)
     {
-        printf("Failed to allocate memory for new transaction\n");
+        fprintf(stderr, "Failed to allocate memory for new transaction\n");
+        free(unspent);
         return 0;
     }
-    new_trans->index = unspent->nb_trans++;
+    new_trans->index = unspent->nb_trans;
+    unspent->nb_trans++;
+
     strncpy(new_trans->sender, sender, DATASIZE_MAX - 1);
     new_trans->sender[DATASIZE_MAX - 1] = '\0';
     strncpy(new_trans->receiver, receiver, DATASIZE_MAX - 1);
@@ -124,5 +132,16 @@ int addTransactionToUnspent(const char *sender, const char *receiver, const char
         unspent->tail = new_trans;
     }
 
-    return (serializeUnspent(unspent));
+    if (!serializeUnspent(unspent))
+    {
+        fprintf(stderr, "Could not serialize unspent with new transaction\n");
+        free(new_trans);
+        free(unspent);
+        return 0;
+    }
+
+    printf("Transaction saved!\n");
+    free(new_trans);
+    free(unspent);
+    return 1;
 }
