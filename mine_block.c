@@ -37,7 +37,7 @@ int main(void)
     {
         fprintf(stderr, "No transactions to mine\n");
         freeBlockchain(blockchain);
-        freeUnspent(unspent);  // Properly free unspent transactions
+        freeTransactions(unspent);  // Properly free unspent transactions
         exit(EXIT_FAILURE);
     }
 
@@ -67,7 +67,6 @@ int main(void)
         fprintf(stderr, "Blockchain is not valid\n");
         freeBlockchain(blockchain);
         freeTransactions(unspent);
-        free(newBlock);
         exit(EXIT_FAILURE);
     }
 
@@ -78,13 +77,10 @@ int main(void)
         fprintf(stderr, "Blockchain with new block could not be serialized\n");
         freeBlockchain(blockchain);
         freeTransactions(unspent);
-        free(newBlock);
         exit(EXIT_FAILURE);
     }
 
-    freeBlockchain(blockchain);
-    freeTransactions(unspent);
-    free(newBlock);
+    printf("Serialized new blockchain\n");
 
     unspent = (list_of_transactions *)malloc(sizeof(list_of_transactions));
     if (!unspent)
@@ -98,7 +94,7 @@ int main(void)
     if (!serializeUnspent(unspent))
     {
         fprintf(stderr, "Failed to reset unspent transactions\n");
-        freeUnspent(unspent);
+        freeTransactions(unspent);
         exit(EXIT_FAILURE);
     }
     freeTransactions(unspent);

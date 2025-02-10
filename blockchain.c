@@ -211,7 +211,7 @@ void freeBlockchain(Blockchain *blockchain)
  * @currentDifficulty: current difficulty level
  * Return: new difficulty level
  */
-int adjusDifficulty(uint64_t prevTime, uint64_t currentTime, int currentDifficulty)
+int adjustDifficulty(uint64_t prevTime, uint64_t currentTime, int currentDifficulty)
 {
     double timeDiff = difftime(currentTime, prevTime);
     if (timeDiff < 10)

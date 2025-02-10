@@ -15,7 +15,7 @@ int main(void)
     if (!blockchain->head)
     {
         printf("Blockchain is empty\n");
-        return;
+        return 0;
     }
     printBlockchain(blockchain);
     freeBlockchain(blockchain);

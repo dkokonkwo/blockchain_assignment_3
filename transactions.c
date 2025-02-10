@@ -152,6 +152,8 @@ int addTransactionToUnspent(const char *sender, const char *receiver, const char
  */
 void freeTransactions(list_of_transactions *transactions)
 {
+    if(!transactions)
+        return;
     transaction_t *current = transactions->head;
     while (current)
     {

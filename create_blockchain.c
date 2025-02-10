@@ -16,12 +16,12 @@ int main()
     if (!serializeBlockchain(blockchain))
     {
         fprintf(stderr, "Could not serialize created blockchain\n");
+        fflush(stdout);
         freeBlockchain(blockchain);
         exit(EXIT_FAILURE);
     }
 
     printf("Blockchain created!\n");
     fflush(stdout);
-    freeBlockchain(blockchain);
     return 0;
 }

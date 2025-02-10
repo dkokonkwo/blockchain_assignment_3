@@ -2,8 +2,8 @@
 
 /**
  * serializeBlockchain - serializes a blockchain to a file
- * blockchain: pointer to blockchain to serialize
- * Return: 1 on success else 0
+ * @blockchain: pointer to blockchain to serialize
+ * Return: 1 on success else 0 on failure
  */
 int serializeBlockchain(Blockchain *blockchain)
 {
@@ -48,5 +48,6 @@ int serializeBlockchain(Blockchain *blockchain)
     }
 
     fclose(file);
+    freeBlockchain(blockchain);
     return 1;
 }

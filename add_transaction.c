@@ -15,14 +15,14 @@ int main(void)
     }
 
     printf("Receiver: ");
-    if (!fgets(sender, sizeof(receiver), stdin))
+    if (!fgets(receiver, sizeof(receiver), stdin))
     {
         printf("Error: invalid input.\n");
         exit(EXIT_FAILURE);
     }
 
     printf("Amount: ");
-    if (!fgets(sender, sizeof(amount), stdin))
+    if (!fgets(amount, sizeof(amount), stdin))
     {
         printf("Error: invalid input.\n");
         exit(EXIT_FAILURE);
