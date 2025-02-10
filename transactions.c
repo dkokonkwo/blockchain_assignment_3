@@ -145,3 +145,19 @@ int addTransactionToUnspent(const char *sender, const char *receiver, const char
     free(unspent);
     return 1;
 }
+
+/**
+ * freeTransactions - frees list of transactions
+ * transactions: pointer to list of transactions
+ */
+void freeTransactions(list_of_transactions *transactions)
+{
+    transaction_t *current = transactions->head;
+    while (current)
+    {
+        transaction_t *next = current->next;
+        free(current);
+        current = next;
+    }
+    free(transactions);
+}

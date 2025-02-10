@@ -42,7 +42,7 @@ list_of_transactions *createTransactions(const char *sender, const char *receive
 
 /**
  * createBlock - creates new block
- * @data: pointer to data to add to block
+ * @transactions: pointer to transactions to add to block
  * @prevHash: previous block hash
  * @difficulty: Proof of Work difficulty level
  */
@@ -197,13 +197,7 @@ void freeBlockchain(Blockchain *blockchain)
     block_t *current = blockchain->head;
     while (current) {
         block_t *next = current->next;
-        transaction_t *trans = current->transactions->head;
-        while (trans) {
-            transaction_t *next_trans = trans->next;
-            free(trans);
-            trans = next_trans;
-        }
-        free(current->transactions);
+        freeTransactions(current->transactions);
         free(current);
         current = next;
     }
@@ -211,13 +205,14 @@ void freeBlockchain(Blockchain *blockchain)
 }
 
 /**
- * adjust_difficulty - adjusts mining difficulty based on block time
+ * adjustDifficulty - adjusts mining difficulty based on block time
  * @prevTime: timestamp of previous block
  * @currentTime: timestamp of current block
  * @currentDifficulty: current difficulty level
  * Return: new difficulty level
  */
-int adjust_difficulty(uint64_t prevTime, uint64_t currentTime, int currentDifficulty) {
+int adjusDifficulty(uint64_t prevTime, uint64_t currentTime, int currentDifficulty)
+{
     double timeDiff = difftime(currentTime, prevTime);
     if (timeDiff < 10)
         return currentDifficulty + 1;  // Increase difficulty

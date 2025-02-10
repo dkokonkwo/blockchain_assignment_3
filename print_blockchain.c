@@ -12,6 +12,11 @@ int main(void)
         fprintf(stderr, "Could not get blockchain from file\n");
         exit(EXIT_FAILURE);
     }
+    if (!blockchain->head)
+    {
+        printf("Blockchain is empty\n");
+        return;
+    }
     printBlockchain(blockchain);
     freeBlockchain(blockchain);
     return 0;

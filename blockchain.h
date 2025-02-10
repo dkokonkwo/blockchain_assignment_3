@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <time.h>
 #include <openssl/sha.h>
 #include <openssl/evp.h>
 
@@ -49,6 +50,7 @@ typedef struct Blockchain {
 int serializeUnspent(list_of_transactions *unspent);
 list_of_transactions *deserializeUnspent(void);
 int addTransactionToUnspent(const char *sender, const char *receiver, const char *amount);
+void freeTransactions(list_of_transactions *transactions);
 
 /* BLOCK MINING FUNCTIONS */
 void mine_block(block_t *block, int difficulty);
@@ -64,6 +66,7 @@ int validateBlockchain(Blockchain *blockchain);
 void printBlockchain(Blockchain *blockchain);
 void freeBlockchain(Blockchain *blockchain);
 list_of_transactions *createTransactions(const char *sender, const char *receiver, const char *amount);
+int adjustDifficulty(uint64_t prevTime, uint64_t currentTime, int currentDifficulty);
 
 /* BLOCK FUNCTIONS */
 block_t *createBlock(int index, list_of_transactions *transactions, const unsigned char *prevHash, int difficulty);

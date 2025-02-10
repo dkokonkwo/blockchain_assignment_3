@@ -9,8 +9,8 @@ Blockchain *deserializeBlockchain(void)
     FILE *file = fopen(BLOCKCHAIN_DATABASE, "rb");
     if (!file)
     {
-        perror("Failed to open file for deserialization");
-        return NULL;
+        perror("Failed to open blockchain file, initializing a new blockchain...");
+        return initBlockchain();
     }
 
     Blockchain *blockchain = (Blockchain *)malloc(sizeof(Blockchain));
