@@ -29,7 +29,7 @@ $ cd <repository-folder>
 ### **2. Compile the Source Code**
 Use the provided **Makefile** to build the executable commands:
 ```sh
-$ make
+$ sudo make
 ```
 This will generate the following CLI tools inside `/usr/bin/`:
 - `create_blockchain`
@@ -39,7 +39,7 @@ This will generate the following CLI tools inside `/usr/bin/`:
 
 If needed, you can clean up the build files using:
 ```sh
-$ make clean
+$ sudo make clean
 ```
 
 ## Usage
@@ -83,10 +83,10 @@ This will display all blocks with their details, including transactions and hash
 ## File Storage
 The blockchain and transactions are stored in serialized files:
 - `BLOCKCHAIN_DATABASE`: Stores blockchain data
-- `TRANSACTION_POOL`: Stores unspent transactions
+- `TRANSACTION_DATABASE`: Stores unspent transactions
 
 ## Troubleshooting
-- **Permission Issues:** Ensure that you have write access to `/usr/bin/` or modify the Makefile to place binaries in `/usr/local/bin/`.
+- **Permission Issues:** Ensure that you have write access to `/usr/bin/` or modify the Makefile to place binaries in `/<current folder>`.
 - **File Not Found Errors:** Run `create_blockchain` first to initialize the blockchain.
 - **Segmentation Faults:** Check that the blockchain and transaction pool files exist and are correctly formatted.
 
